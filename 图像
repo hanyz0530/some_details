@@ -1,0 +1,42 @@
+from sklearn.metrics import roc_curve
+from sklearn.metrics import auc
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import os
+
+# load data 
+path = '/Users/yzhan/Desktop/胆囊癌/vit_imageonly/np_imageonly2'
+def load_numpy(path):
+    for file in os.listdir(path):
+        if file.startswith('test_pre') and not file.startswith('test_pre_softmax'):
+            #print('test_predict',file)
+            test_predict = np.load(os.path.join(path,file))
+        elif file.startswith('val_pre') and not file.startswith('val_pre_softmax'):
+            #print('val_predict',file)
+            val_predict = np.load(os.path.join(path,file))
+        elif file.startswith('test_label'):
+            #print('test_label',file)
+            test_label = np.load(os.path.join(path,file))
+        elif file.startswith('val_label'):
+            #print('val_label',file)
+            val_label = np.load(os.path.join(path,file))
+    return test_predict,val_predict,test_label,val_label
+
+test_predict,val_predict,test_label,val_label = load_numpy(path)
+
+## 绘制roc 曲线
+def draw_roc(label,score,title):
+    fpr, tpr, thresholds = roc_curve(label, score)
+    roc_auc = auc(fpr, tpr)
+    print(roc_auc)
+    plt.title('ROC')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.plot(fpr,tpr,label = 'vit')
+    plt.legend()
+    plt.savefig(os.path.join(path,title+'_roc_curve.png'), dpi=500)
+    plt.show()
+
+draw_roc(test_label,test_predict,'test')
+draw_roc(val_label,val_predict,'val')
